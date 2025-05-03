@@ -1,0 +1,43 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import LSTM, Dense
+
+# Simulated crack width data (in mm)
+crack_data = np.array([0.2, 0.23, 0.27, 0.31, 0.36, 0.40, 0.45, 0.51, 0.58])
+
+# Prepare dataset
+X, y = [], []
+n_steps = 3
+for i in range(len(crack_data) - n_steps):
+    X.append(crack_data[i:i+n_steps])
+    y.append(crack_data[i+n_steps])
+X, y = np.array(X), np.array(y)
+X = X.reshape((X.shape[0], X.shape[1], 1))
+
+# LSTM model
+model = Sequential()
+model.add(LSTM(50, activation='relu', input_shape=(n_steps, 1)))
+model.add(Dense(1))
+model.compile(optimizer='adam', loss='mse')
+model.fit(X, y, epochs=200, verbose=0)
+
+# Predict next crack size
+last_sequence = crack_data[-n_steps:].reshape((1, n_steps, 1))
+next_crack_size = model.predict(last_sequence)
+
+# Status check
+threshold = 0.5
+status = "ALERT: Immediate maintenance required!" if next_crack_size[0][0] > threshold else "Status: Crack within safe limits."
+print(f"Predicted crack width: {next_crack_size[0][0]:.3f} mm")
+print(status)
+
+# Plot
+plt.plot(range(len(crack_data)), crack_data, label="Historical")
+plt.plot(len(crack_data), next_crack_size[0][0], 'ro', label="Predicted")
+plt.title("Crack Width Forecasting")
+plt.xlabel("Time")
+plt.ylabel("Crack Width (mm)")
+plt.legend()
+plt.grid(True)
+plt.show()
