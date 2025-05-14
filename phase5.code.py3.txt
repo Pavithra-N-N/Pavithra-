@@ -1,0 +1,8 @@
+import random
+
+def get_sensor_data():
+    return {
+        'strain': round(random.uniform(0.3, 0.8), 2),
+        'vibration': round(random.uniform(0.1, 0.5), 2),
+        'temperature': round(random.uniform(20, 45), 1)
+    }
